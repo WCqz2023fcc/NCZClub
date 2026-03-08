@@ -159,7 +159,14 @@
             border-radius: 6px;
             font-size: 14px;
             color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+
+            .hitter-item:hover {
+                background: #6a4c93;
+                color: #fff;
+            }
         /* 底部导航 */
         .bottom-nav {
             position: fixed;
@@ -244,12 +251,11 @@
         <a href="order.html" class="nav-item">下单</a>
     </div>
     <div class="version">Ver 2.7.11</div>
-
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>// 核心修正：改为club-manage.json
+    <script>
+    // 核心修正：改为club-manage.json
         const GIST_ID = "ef4765e8027d7b3345f66fe47e6f04a4";
         const FILE_NAME = "club-manage.json";
-
         // 选项卡切换
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -257,32 +263,32 @@
             event.target.classList.add('active');
             document.getElementById(tabName).classList.add('active');
         }
-
         // 加载数据（读取club-manage.json）
         async function loadClubData() {
             try {
                 const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
                 if (!response.ok) throw new Error(`请求失败：${response.status}`);
-
                 const gistData = await response.json();
                 // 检查club-manage.json是否存在
                 if (!gistData.files || !gistData.files[FILE_NAME]) {
                     throw new Error("未找到club-manage.json文件");
                 }
-
                 const clubData = JSON.parse(gistData.files[FILE_NAME].content);
                 // 渲染简介和技能要求（匹配管理中心的字段名skillReq）
                 document.getElementById('introContent').innerHTML = marked.parse(clubData.intro || "## 俱乐部简介\n暂无内容");
                 document.getElementById('skillContent').innerHTML = marked.parse(clubData.skillReq || "### 技能要求\n暂无内容");
-
-                // 渲染打手列表
+                // 渲染打手列表（点击跳转hitter-detail.html，传递打手名字参数）
                 const hitterList = document.getElementById('hitterList');
                 if (clubData.hitters && clubData.hitters.length > 0) {
-                    hitterList.innerHTML = clubData.hitters.map(name => `<div class="hitter-item">${name}</div>`).join("");
+                    // 给每个打手名字添加点击事件，跳转并编码名字（防止特殊字符）
+                    hitterList.innerHTML = clubData.hitters.map(name => `
+                            <div class="hitter-item" onclick="jumpToHitterDetail('${encodeURIComponent(name)}')">
+                                ${name}
+                            </div>
+                        `).join("");
                 } else {
                     hitterList.innerHTML = '<div class="loading">暂无打手信息</div>';
                 }
-
             } catch (error) {
                 console.error("加载失败：", error);
                 document.getElementById('introContent').innerText = "数据加载成功";
@@ -290,7 +296,11 @@
                 document.getElementById('hitterList').innerHTML = '<div class="loading">数据加载成功</div>';
             }
         }
-
+        // 跳转打手详情页函数
+        function jumpToHitterDetail(hitterName) {
+            // 跳转到新网页，携带打手名字参数
+            window.location.href = `hitter-detail.html?name=${hitterName}`;
+        }
         window.onload = loadClubData;</script>
 </body>
 </html>
